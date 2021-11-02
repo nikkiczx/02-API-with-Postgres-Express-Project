@@ -34,9 +34,10 @@ Table: Products(id: SERIAL PRIMARY KEY, name: VARCHAR, price: NUMERIC)
 - id
 - firstName
 - lastName
+- email
 - password
 
-Table: Users(id: SERIAL PRIMARY KEY, firstName: VARCHAR, lastName: VARCHAR, password: VARCHAR)
+Table: Users(id: SERIAL PRIMARY KEY, firstName: VARCHAR, lastName: VARCHAR, email: VARCHAR password: VARCHAR)
 
 #### Orders
 - id
@@ -45,4 +46,4 @@ Table: Users(id: SERIAL PRIMARY KEY, firstName: VARCHAR, lastName: VARCHAR, pass
 - user_id
 - status of order (active or complete)
 
-Table: Orders(id: SERIAL PRIMARY KEY, product_id: INTEGER[FOREIGN KEY to Products table], quantity: INTEGER, user_id: INTEGER[FOREIGN KEY to Users table], status: VARCHAR)
+Table: Orders(id: SERIAL PRIMARY KEY, product_id: INTEGER[FOREIGN KEY to Products table], quantity: INTEGER, user_id: INTEGER[FOREIGN KEY to Users table], status: INTEGER)
