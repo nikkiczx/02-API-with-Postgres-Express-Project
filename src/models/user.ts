@@ -1,6 +1,11 @@
 import Client from "../database";
 import bcrypt from "bcrypt";
 
+dotenv.config();
+
+const pepper: string = process.env.BCRYPT_PASSWORD!;
+const saltRounds: string = process.env.SALT_ROUNDS!;
+
 export interface User {
   id?: number;
   email: string;
@@ -30,15 +35,11 @@ export class UserStore {
   async create(user: User): Promise<UserPreview> {
     try {
       const conn = await Client.connect();
-      const pepper = process.env.BCRYPT_PASSWORD;
-      const saltRounds = parseInt(process.env.SALT_ROUNDS as string);
-      const hashedPassword = await bcrypt.hash(
-        user.password + pepper,
-        saltRounds
-      );
+      const hash = bcrypt.hashSync(user.password + pepper, parseInt(saltRounds));
+
       const result = await conn.query(
         "INSERT INTO users(email, firstname, lastname, password) VALUES ($1, $2, $3, $4) RETURNING id",
-        [user.email, user.firstname, user.lastname, hashedPassword]
+        [user.email, user.firstname, user.lastname, hash]
       );
       conn.release();
       return {
@@ -56,7 +57,6 @@ export class UserStore {
   ): Promise<UserPreview | null> {
     try {
       const conn = await Client.connect();
-      const pepper = process.env.BCRYPT_PASSWORD;
       const result = await conn.query(
         "SELECT * FROM users WHERE email=$1",
         [email]
