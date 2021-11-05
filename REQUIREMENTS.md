@@ -8,18 +8,18 @@ These are the notes from a meeting with the frontend developer that describe wha
 - Index                         GET     '/products'
 - Show                          GET     '/products/:id'
 - Create [token required]       POST    '/products'
-
-
+- Delete [token required]       DELETE  '/products/:id'
 
 #### Users
 - Index [token required]        GET     '/users'
 - Show [token required]         GET     '/users/:id'
 - Create [token required]       POST    '/users'
+- Delete [token required]       DELETE  '/users/:id'
 
 #### Orders
-- Index                         GET     '/orders'
 - Show                          GET     '/orders/:userID'
 - Create                        POST    '/orders/:userID'                
+- Delete                        DELETE  '/orders/:userID'
 - [OPTIONAL] Completed Orders by user (args: user id)[token required]
 
 ## Data Shapes
@@ -41,9 +41,15 @@ Table: Users(id: SERIAL PRIMARY KEY, firstName: VARCHAR, lastName: VARCHAR, emai
 
 #### Orders
 - id
-- id of each product in the order
-- quantity of each product in the order
 - user_id
 - status of order (active or complete)
 
-Table: Orders(id: SERIAL PRIMARY KEY, product_id: INTEGER[FOREIGN KEY to Products table], quantity: INTEGER, user_id: INTEGER[FOREIGN KEY to Users table], status: INTEGER)
+Table: Orders(id: SERIAL PRIMARY KEY, user_id: INTEGER[FOREIGN KEY to Users table], status: INTEGER)
+
+#### Order_Products
+- id
+- order_id
+- product_id
+- quantity
+
+Table: Order_Products(id: SERIAL PRIMARY KEY, order_id: INTEGER[FOREIGN KEY to Orders table], product_id: INTEGER[FOREIGN KEY to Products table], quantity: INTEGER)

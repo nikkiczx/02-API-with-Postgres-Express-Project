@@ -13,18 +13,16 @@ export type Order = {
 };
 
 export class OrderStore {
-  async showOrdersByUserId(
+  async show(
     userId: number,
     status?: OrderStatusTypes
   ): Promise<Order[]> {
     try {
+      const sql = "SELECT * FROM orders WHERE user_id=$1 AND status=$2;";
       const conn = await Client.connect();
       let result: QueryResult<Order>;
       if (status || status === 0) {
-        result = await conn.query(
-          "SELECT * FROM orders WHERE user_id=$1 AND status=$2;",
-          [userId, status]
-        );
+        result = await conn.query(sql,[userId, status]);
       } else {
         result = await conn.query(
           "SELECT * FROM orders WHERE user_id=$1;",
@@ -40,16 +38,11 @@ export class OrderStore {
 
   async create(order: Order): Promise<Order> {
     try {
+      const sql = "INSERT INTO orders(user_id) VALUES ($1) RETURNING id;";
       const conn = await Client.connect();
-      const result = await conn.query(
-        "INSERT INTO orders(user_id) VALUES ($1) RETURNING id;",
-        [order.user_id]
-      );
+      const result = await conn.query(sql,[order.user_id]);
       conn.release();
-      return {
-        ...result.rows[0],
-        ...order
-      };
+      return result.rows[0];
     } catch (error) {
       throw new Error(`Unable to create order ${error}`);
     }
@@ -57,24 +50,20 @@ export class OrderStore {
 
   async orderCompleted(orderId: number) {
     try {
+      const sql = "UPDATE orders SET status=1 WHERE id=$1;";
       const conn = await Client.connect();
-      await conn.query("UPDATE orders SET status=1 WHERE id=$1;", [
-        orderId
-      ]);
+      await conn.query(sql, [orderId]);
       conn.release();
     } catch (error) {
       throw new Error(`Unable to set order as completed ${error}`);
     }
   }
 
-  async delete(id?: number): Promise<void> {
+  async delete(id: number): Promise<void> {
     try {
+      const sql = "DELETE FROM orders WHERE id=$1";
       const conn = await Client.connect();
-      if (id) {
-        await conn.query("DELETE FROM orders WHERE id=$1", [id]);
-      } else {
-        await conn.query("DELETE FROM orders");
-      }
+      await conn.query(sql, [id]);
       conn.release();
     } catch (error) {
       throw new Error(`Unable to delete order ${error}`);

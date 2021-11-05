@@ -9,10 +9,9 @@ export interface Product {
 export class ProductStore {
   async index(): Promise<Product[]> {
     try {
+      const sql = "SELECT * FROM products";
       const conn = await Client.connect();
-      const result = await conn.query(
-        "SELECT * FROM products"
-      );
+      const result = await conn.query(sql);
       conn.release();
       return result.rows;
     } catch (error) {
@@ -22,16 +21,11 @@ export class ProductStore {
 
   async create(product: Product): Promise<Product> {
     try {
+      const sql = "INSERT INTO products(name, price) VALUES($1, $2) RETURNING id";
       const conn = await Client.connect();
-      const result = await conn.query(
-        "INSERT INTO products(name, price) VALUES($1, $2) RETURNING id",
-        [product.name, product.price]
-      );
+      const result = await conn.query(sql, [product.name, product.price]);
       conn.release();
-      return {
-        ...result.rows[0],
-        ...product
-      };
+      return result.rows[0];
     } catch (error) {
       throw new Error(`Unable to create product ${error}`);
     }
@@ -39,31 +33,24 @@ export class ProductStore {
 
   async show(id: number): Promise<Product | null> {
     try {
+      const sql = "SELECT * FROM products WHERE id=$1";
       const conn = await Client.connect();
-      const result = await conn.query(
-        "SELECT * FROM products WHERE id=$1",
-        [id]
-      );
+      const result = await conn.query(sql, [id]);
       conn.release();
       if (result.rowCount > 0) {
         return result.rows[0];
       }
       return null;
     } catch (error) {
-      throw new Error(`Unable to get product ${error}`);
+      throw new Error(`Unable to get product with id=($1) ${error}`);
     }
   }
 
-  async delete(id?: number): Promise<void> {
+  async delete(id: number): Promise<void> {
     try {
+      const sql = "DELETE FROM products WHERE id=$1";
       const conn = await Client.connect();
-      if (id) {
-        await conn.query("DELETE FROM products WHERE id=$1", [
-          id
-        ]);
-      } else {
-        await conn.query("DELETE FROM products");
-      }
+      await conn.query(sql, [id]);
       conn.release();
     } catch (error) {
       throw new Error(`Unable to delete product ${error}`);
